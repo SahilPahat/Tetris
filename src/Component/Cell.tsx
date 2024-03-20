@@ -4,18 +4,25 @@ const height = Dimensions.get('window').height;
 const width = Dimensions.get('window').width;
 type CellProps = ViewProps & {
   bac?: string;
-  text?: number
+  text?: number;
+  occupied: boolean | false;
 };
-export const CELL_SIZE = width * 0.095
+export const CELL_SIZE = width * 0.06;
 const Cell = (props: CellProps) => (
   <View
     style={{
       height: CELL_SIZE,
       width: CELL_SIZE,
-      backgroundColor: typeof props.bac == 'string' ? props.bac : 'lightgrey',
+      backgroundColor: props.occupied
+        ? 'black'
+        : props.bac
+        ? props.bac
+        : 'brown',
       borderRadius: 5,
       margin: 1,
-    }}><Text>{props.text}</Text></View>
+    }}>
+    {/* <Text>{props.bac}</Text> */}
+  </View>
 );
 
 export default Cell;
