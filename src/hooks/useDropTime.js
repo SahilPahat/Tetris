@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import {useState, useCallback, useEffect, useRef} from 'react';
 
-const defaultDropTime = 1000;
+const defaultDropTime = 500;
 const minimumDropTime = 100;
 const speedIncrement = 50;
 
@@ -27,33 +27,33 @@ export const useInterval = (callback, delay) => {
   }, [delay]);
 };
 
-export const useDropTime = ({ gameStats }) => {
+export const useDropTime = ({gameStats}) => {
   const [dropTime, setDropTime] = useState(defaultDropTime);
-  const [previousDropTime, setPreviousDropTime] = useState();
+  const [isPaused, setIsPaused] = useState(false);
 
-  const resumeDropTime = useCallback(() => {
-    if (!previousDropTime) {
-      return;
-    }
-    setDropTime(previousDropTime);
-    setPreviousDropTime(null);
-    console.log("res",previousDropTime)
-  }, [previousDropTime]);
-
+  // Function to pause the dropping
   const pauseDropTime = useCallback(() => {
-    if (dropTime) {
-      setPreviousDropTime(dropTime);
+    if (!isPaused) {
+      setIsPaused(true);
     }
-    setDropTime(null);
-    console.log("prev",dropTime)
-  }, [dropTime, setPreviousDropTime]);
+  }, [isPaused]);
+
+  // Function to resume dropping
+  const resumeDropTime = useCallback(() => {
+    if (isPaused) {
+      setIsPaused(false);
+    }
+  }, [isPaused]);
 
   useEffect(() => {
-    const speed = speedIncrement * (gameStats.level - 1);
-    const newDropTime = Math.max(defaultDropTime - speed, minimumDropTime);
-
-    setDropTime(newDropTime);
-  }, [gameStats.level, setDropTime]);
+    if (!isPaused) {
+      const speed = speedIncrement * (gameStats.level - 1);
+      const newDropTime = Math.max(defaultDropTime - speed, minimumDropTime);
+      setDropTime(newDropTime);
+    } else {
+      setDropTime(null); // Pause dropping by setting to null
+    }
+  }, [gameStats.level, isPaused]);
 
   return [dropTime, pauseDropTime, resumeDropTime];
 };

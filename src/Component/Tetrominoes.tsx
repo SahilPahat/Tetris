@@ -38,7 +38,7 @@ export const TETROMINOES = {
       [1, 1, 0],
       [0, 0, 0]
     ],
-    color: 'cream'
+    color: 'skyblue'
   },
   T: {
     shape: [

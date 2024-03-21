@@ -26,7 +26,7 @@ export const Key = {
   Right: Action.Right,
   KeyQ: Action.Quit,
   Pause: Action.Pause,
-  Space: Action.FastDrop,
+  FastDrop: Action.FastDrop,
 };
 
 export const actionIsDrop = (action: any) =>
@@ -91,27 +91,32 @@ const attemptMovement = ({
   player,
   setPlayer,
   setGameOver,
+  swipe,
 }: any) => {
   const delta = {row: 0, column: 0};
   let isFastDropping = false;
-
-  if (action === Action.FastDrop) {
-    isFastDropping = true;
-  } else if (action === Action.SlowDrop) {
-    delta.row += 1;
-  } else if (action === Action.Left) {
-    delta.column -= 1;
-  } else if (action === Action.Right) {
-    delta.column += 1;
+  // console.log('SnextPositionDes', player.position);
+  if (swipe != null || swipe != undefined) {
+    if (action === Action.Left || action === Action.Right) {
+      delta.column += Math.round(swipe / 30);
+    }
+  } else {
+    if (action === Action.FastDrop) {
+      isFastDropping = true;
+    } else if (action === Action.SlowDrop) {
+      delta.row += 1;
+    } else if (action === Action.Left) {
+      delta.column -= 1;
+    } else if (action === Action.Right) {
+      delta.column += 1;
+    }
   }
-
   const {collided, nextPosition} = movePlayer({
     delta,
     position: player.position,
     shape: player.tetromino.shape,
     board,
   });
-
   // Did we collide immediately? If so, game over, man!
   const isGameOver = collided && player.position.row === 0;
   if (isGameOver) {
@@ -132,13 +137,14 @@ export const playerController = ({
   player,
   setPlayer,
   setGameOver,
+  swipe,
 }: any) => {
   if (!action) return;
 
   if (action === Action.Rotate) {
     attemptRotation({board, player, setPlayer});
   } else {
-    attemptMovement({board, player, setPlayer, action, setGameOver});
+    attemptMovement({board, player, setPlayer, action, setGameOver, swipe});
   }
 };
 
@@ -149,12 +155,14 @@ const GameController = ({
   setGameOver,
   setPlayer,
   pause,
+  swipeStart,
 }: any) => {
   const [dropTime, pauseDropTime, resumeDropTime] = useDropTime({
     gameStats,
   });
 
   useInterval(() => {
+    !swipeStart ? null : handleInput({action: Action.SlowDrop});
     pause ? null : handleInput({action: Action.SlowDrop});
   }, dropTime);
 
@@ -190,28 +198,17 @@ const GameController = ({
       player,
       setPlayer,
       setGameOver,
+      swipe: null,
     });
   };
 
   return (
     <View style={{}}>
-      <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-        <TouchableOpacity
-          style={styles.buttons}
-          onPress={() => onKeyDown(Action.Right)}>
-          <Text style={styles.text}>{'>'}</Text>
-        </TouchableOpacity>
-
+      <View style={{flexDirection: 'row', justifyContent: 'center'}}>
         <TouchableOpacity
           style={styles.buttons}
           onPress={() => onKeyDown(Action.Rotate)}>
-          <Text style={styles.text}>{'R'}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.buttons}
-          onPress={() => onKeyDown(Action.Left)}>
-          <Text style={styles.text}>{'<'}</Text>
+          <Text style={styles.text}>Rotate</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -230,7 +227,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: 'white',
-    fontSize: 35,
+    fontSize: 25,
     fontWeight: '700',
   },
 });

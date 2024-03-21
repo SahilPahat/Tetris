@@ -2,18 +2,24 @@ import {
   Alert,
   BackHandler,
   Modal,
+  PanResponder,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import React, {useState, useCallback, useEffect} from 'react';
+import React, {useState, useCallback, useEffect, useRef} from 'react';
 import Board from './Board';
 import {useBoard} from './hooks/useBoard';
 import {usePlayer} from './hooks/usePlayer';
 import {useGameStats} from './hooks/useGameStats';
-import GameController from './GameController';
+import GameController, {
+  Action,
+  actionForKey,
+  playerController,
+} from './GameController';
 import GameStats from './GameStats';
 import {COLORS, COLUMNS, ROWS, SCREEN_HEIGHT, SCREEN_WIDTH} from './Constants';
 import Header from './Component/Header';
@@ -90,7 +96,7 @@ const PauseMenu = ({pause, setPause}: any) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.menuButton}
-              onPress={() => resetGameOver()}>
+              onPress={() => setGameOver(false)}>
               <Text style={styles.text}>Start New Game</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.menuButton}>
@@ -108,6 +114,7 @@ const PauseMenu = ({pause, setPause}: any) => {
 
 const Game = () => {
   const [pause, setPause] = useState(false);
+  const [swipeStart, setSwipeStart] = useState(false);
   const [gameStats, addLinesCleared] = useGameStats();
   const [player, setPlayer, resetPlayer] = usePlayer();
   const [board] = useBoard({
@@ -121,20 +128,72 @@ const Game = () => {
 
   useEffect(() => {
     if (gameOver) {
-      Alert.alert('GameOver');
+      setPause(true)
     }
     setPause(true);
   }, [gameOver]);
-
+  const swipeDirection = useRef(null);
+  const responder = PanResponder.create({
+    onStartShouldSetPanResponder: () => !swipeStart,
+    onPanResponderMove: (evt, gestureState) => {
+      const {dx, dy} = gestureState;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        // Horizontal swipe detected
+        playerController({
+          action:
+            dx > 0 ? actionForKey(Action.Right) : actionForKey(Action.Left),
+          board,
+          player,
+          setPlayer,
+          setGameOver,
+          swipe: dx,
+        });
+      } else if (Math.abs(dy) > 0) {
+        // Vertical swipe detected
+        playerController({
+          action: actionForKey(Action.FastDrop),
+          board,
+          player,
+          setPlayer,
+          setGameOver,
+          swipe: dy,
+        });
+      }
+      setSwipeStart(true);
+    },
+    onPanResponderRelease: () => {
+      setSwipeStart(false);
+    },
+    // Allow responder to handle rotation gestures as well
+    onPanResponderTerminationRequest: () => true,
+    onPanResponderTerminate: () => {},
+  });
+  const rotateButton = () => {
+    if (swipeStart) {
+      playerController({
+        action: actionForKey(Action.Rotate),
+        board,
+        player,
+        setPlayer,
+        setGameOver,
+        swipe: null,
+      });
+    }
+  };
   return (
-    <SafeAreaView style={{backgroundColor: 'white', flex: 1}}>
+    <View style={{backgroundColor: 'white', flex: 1}}>
       <Header
         header="TETRIS"
         onPause={() => setPause(!pause)}
         pauseButton={pause}
       />
       <GameStats gameStats={gameStats} />
-      <Board board={board} />
+      <View
+        style={{flex: 1}}
+        {...responder.panHandlers}
+        onResponderStart={rotateButton}>
+        <Board board={board} />
+      </View>
       <GameController
         board={board}
         gameStats={gameStats}
@@ -142,9 +201,10 @@ const Game = () => {
         setGameOver={setGameOver}
         setPlayer={setPlayer}
         pause={pause}
+        swipeStart={swipeStart}
       />
       <PauseMenu pause={pause} setPause={setPause} />
-    </SafeAreaView>
+    </View>
   );
 };
 
