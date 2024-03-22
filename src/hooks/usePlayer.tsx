@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { randomTetromino } from "../Component/Tetrominoes";
 
 
-const buildPlayer = (previous: any) => {
+export const buildPlayer = (previous: any) => {
   let tetrominoes;
 
   if (previous) {

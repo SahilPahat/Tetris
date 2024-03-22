@@ -1,9 +1,9 @@
 import {useState, useEffect} from 'react';
-import { transferToBoard } from '../Component/Tetrominoes';
-import { movePlayer } from '../GameController';
+import {transferToBoard} from '../Component/Tetrominoes';
+import {movePlayer} from '../GameController';
 export const defaultCell = {
   occupied: false,
-  color: ''
+  color: '',
 };
 
 export const buildBoard = ({rows, columns}: any) => {
@@ -17,14 +17,14 @@ export const buildBoard = ({rows, columns}: any) => {
   };
 };
 
-const findDropPosition = ({ board, position, shape }: any) => {
+const findDropPosition = ({board, position, shape}: any) => {
   let max = board.size.rows - position.row + 1;
   let row = 0;
 
   for (let i = 0; i < max; i++) {
-    const delta = { row: i, column: 0 };
-    const result = movePlayer({ delta, position, shape, board });
-    const { collided } = result;
+    const delta = {row: i, column: 0};
+    const result = movePlayer({delta, position, shape, board});
+    const {collided} = result;
 
     if (collided) {
       break;
@@ -33,7 +33,7 @@ const findDropPosition = ({ board, position, shape }: any) => {
     row = position.row + i;
   }
 
-  return { ...position, row };
+  return {...position, row};
 };
 
 export const nextBoard = ({
@@ -50,33 +50,33 @@ export const nextBoard = ({
   );
 
   // Drop position
-    const dropPosition = findDropPosition({
-      board,
-      position,
-      shape: tetromino.shape
-    });
+  const dropPosition = findDropPosition({
+    board,
+    position,
+    shape: tetromino.shape,
+  });
 
   // Place ghost
-  const color = 'grey'
-    rows = transferToBoard({
-      color,
-      isOccupied: player.isFastDropping,
-      position: dropPosition,
-      rows,
-      shape: tetromino.shape
-    });
+  const color = 'grey';
+  rows = transferToBoard({
+    color: player.isFastDropping ? tetromino.color : color,
+    isOccupied: player.isFastDropping,
+    position: dropPosition,
+    rows,
+    shape: tetromino.shape,
+  });
 
-    // Place the piece.
-    // If it collided, mark the board cells as collided
-    if (!player.isFastDropping) {
-      rows = transferToBoard({
-        color: tetromino.color,
-        isOccupied: player.collided,
-        position,
-        rows,
-        shape: tetromino.shape
-      });
-    }
+  // Place the piece.
+  // If it collided, mark the board cells as collided
+  if (!player.isFastDropping) {
+    rows = transferToBoard({
+      color: tetromino.color,
+      isOccupied: player.collided,
+      position,
+      rows,
+      shape: tetromino.shape,
+    });
+  }
 
   // Check for cleared lines
   const blankRow = rows[0].map(_ => ({...defaultCell}));
@@ -167,5 +167,5 @@ export const useBoard = ({
     );
   }, [player, resetPlayer, addLinesCleared]);
 
-  return [board];
+  return [board, setBoard];
 };

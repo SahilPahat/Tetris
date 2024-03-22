@@ -14,10 +14,10 @@ const Cell = (props: CellProps) => (
       height: CELL_SIZE,
       width: CELL_SIZE,
       backgroundColor: props.occupied
-        ? 'black'
+        ? props.bac
         : props.bac
         ? props.bac
-        : 'brown',
+        : 'rgba(222, 237, 255, 1)',
       borderRadius: 5,
       margin: 1,
     }}>

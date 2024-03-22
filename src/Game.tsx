@@ -12,8 +12,8 @@ import {
 } from 'react-native';
 import React, {useState, useCallback, useEffect, useRef} from 'react';
 import Board from './Board';
-import {useBoard} from './hooks/useBoard';
-import {usePlayer} from './hooks/usePlayer';
+import {buildBoard, nextBoard, useBoard} from './hooks/useBoard';
+import {buildPlayer, usePlayer} from './hooks/usePlayer';
 import {useGameStats} from './hooks/useGameStats';
 import GameController, {
   Action,
@@ -23,7 +23,6 @@ import GameController, {
 import GameStats from './GameStats';
 import {COLORS, COLUMNS, ROWS, SCREEN_HEIGHT, SCREEN_WIDTH} from './Constants';
 import Header from './Component/Header';
-import {useDropTime} from './hooks/useDropTime';
 
 export const useGameOver = () => {
   const [gameOver, setGameOver] = useState(true);
@@ -35,8 +34,14 @@ export const useGameOver = () => {
   return [gameOver, setGameOver, resetGameOver];
 };
 
-const PauseMenu = ({pause, setPause}: any) => {
-  const [gameOver, setGameOver, resetGameOver] = useGameOver();
+const PauseMenu = ({
+  pause,
+  setPause,
+  setBoard,
+  resetGameStats,
+  addLinesCleared,
+}: any) => {
+  const [player, setPlayer, resetPlayer] = usePlayer();
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
@@ -96,7 +101,19 @@ const PauseMenu = ({pause, setPause}: any) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.menuButton}
-              onPress={() => setGameOver(false)}>
+              onPress={() => {
+                setPlayer(buildPlayer(null));
+                resetGameStats();
+                setBoard(() =>
+                  nextBoard({
+                    board: buildBoard({rows: ROWS, columns: COLUMNS}),
+                    player,
+                    resetPlayer,
+                    addLinesCleared,
+                  }),
+                );
+                setPause(!pause);
+              }}>
               <Text style={styles.text}>Start New Game</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.menuButton}>
@@ -115,9 +132,9 @@ const PauseMenu = ({pause, setPause}: any) => {
 const Game = () => {
   const [pause, setPause] = useState(false);
   const [swipeStart, setSwipeStart] = useState(false);
-  const [gameStats, addLinesCleared] = useGameStats();
+  const [gameStats, addLinesCleared, resetGameStats] = useGameStats();
   const [player, setPlayer, resetPlayer] = usePlayer();
-  const [board] = useBoard({
+  const [board, setBoard] = useBoard({
     rows: ROWS,
     columns: COLUMNS,
     player,
@@ -128,15 +145,19 @@ const Game = () => {
 
   useEffect(() => {
     if (gameOver) {
-      setPause(true)
+      setPause(!pause);
     }
-    setPause(true);
   }, [gameOver]);
-  const swipeDirection = useRef(null);
+  const swipeDirection = useRef({x: null, y: null});
   const responder = PanResponder.create({
-    onStartShouldSetPanResponder: () => !swipeStart,
+    onStartShouldSetPanResponder: () => true,
     onPanResponderMove: (evt, gestureState) => {
+      setSwipeStart(true);
       const {dx, dy} = gestureState;
+      if (swipeDirection.current) {
+        swipeDirection.current.x = dx;
+        swipeDirection.current.y = dy;
+      }
       if (Math.abs(dx) > Math.abs(dy)) {
         // Horizontal swipe detected
         playerController({
@@ -148,7 +169,17 @@ const Game = () => {
           setGameOver,
           swipe: dx,
         });
-      } else if (Math.abs(dy) > 0) {
+      }
+    },
+    onPanResponderRelease: (evt, gestureState) => {
+      setSwipeStart(false);
+      const {dx, dy} = gestureState;
+      if (swipeDirection.current.x == null || swipeDirection.current.x < 0) {
+        setTimeout(() => {
+          rotateButton();
+        }, 100);
+      }
+      if (Math.abs(dy) > 30 || Math.abs(swipeDirection.current.y) > 30) {
         // Vertical swipe detected
         playerController({
           action: actionForKey(Action.FastDrop),
@@ -159,26 +190,18 @@ const Game = () => {
           swipe: dy,
         });
       }
-      setSwipeStart(true);
+      swipeDirection.current = {x: null, y: null};
     },
-    onPanResponderRelease: () => {
-      setSwipeStart(false);
-    },
-    // Allow responder to handle rotation gestures as well
-    onPanResponderTerminationRequest: () => true,
-    onPanResponderTerminate: () => {},
   });
   const rotateButton = () => {
-    if (swipeStart) {
-      playerController({
-        action: actionForKey(Action.Rotate),
-        board,
-        player,
-        setPlayer,
-        setGameOver,
-        swipe: null,
-      });
-    }
+    playerController({
+      action: actionForKey(Action.Rotate),
+      board,
+      player,
+      setPlayer,
+      setGameOver,
+      swipe: null,
+    });
   };
   return (
     <View style={{backgroundColor: 'white', flex: 1}}>
@@ -188,10 +211,7 @@ const Game = () => {
         pauseButton={pause}
       />
       <GameStats gameStats={gameStats} />
-      <View
-        style={{flex: 1}}
-        {...responder.panHandlers}
-        onResponderStart={rotateButton}>
+      <View style={{flex: 1}} {...responder.panHandlers}>
         <Board board={board} />
       </View>
       <GameController
@@ -203,7 +223,13 @@ const Game = () => {
         pause={pause}
         swipeStart={swipeStart}
       />
-      <PauseMenu pause={pause} setPause={setPause} />
+      <PauseMenu
+        pause={pause}
+        setPause={setPause}
+        setBoard={setBoard}
+        resetGameStats={resetGameStats}
+        addLinesCleared={addLinesCleared}
+      />
     </View>
   );
 };

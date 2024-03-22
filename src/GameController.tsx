@@ -100,6 +100,8 @@ const attemptMovement = ({
     if (action === Action.Left || action === Action.Right) {
       delta.column += Math.round(swipe / 30);
     }
+    else if (action === Action.FastDrop) 
+      isFastDropping = true;
   } else {
     if (action === Action.FastDrop) {
       isFastDropping = true;
@@ -204,13 +206,13 @@ const GameController = ({
 
   return (
     <View style={{}}>
-      <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+      {/* <View style={{flexDirection: 'row', justifyContent: 'center'}}>
         <TouchableOpacity
           style={styles.buttons}
           onPress={() => onKeyDown(Action.Rotate)}>
           <Text style={styles.text}>Rotate</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   );
 };
