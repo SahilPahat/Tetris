@@ -3,26 +3,25 @@ import {
   BackHandler,
   Modal,
   PanResponder,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import React, {useState, useCallback, useEffect, useRef} from 'react';
-import Board from './Board';
-import {buildBoard, nextBoard, useBoard} from './hooks/useBoard';
-import {buildPlayer, usePlayer} from './hooks/usePlayer';
-import {useGameStats} from './hooks/useGameStats';
+import Board from '../Board';
+import {buildBoard, nextBoard, useBoard} from '../hooks/useBoard';
+import {buildPlayer, usePlayer} from '../hooks/usePlayer';
+import {useGameStats} from '../hooks/useGameStats';
 import GameController, {
   Action,
   actionForKey,
   playerController,
 } from './GameController';
 import GameStats from './GameStats';
-import {COLORS, COLUMNS, ROWS, SCREEN_HEIGHT, SCREEN_WIDTH} from './Constants';
-import Header from './Component/Header';
+import {COLORS, COLUMNS, ROWS, SCREEN_HEIGHT, SCREEN_WIDTH} from '../Constants';
+import Header from '../Component/Header';
+import NextBox from './NextBox';
 
 export const useGameOver = () => {
   const [gameOver, setGameOver] = useState(true);
@@ -211,8 +210,16 @@ const Game = () => {
         pauseButton={pause}
       />
       <GameStats gameStats={gameStats} />
-      <View style={{flex: 1}} {...responder.panHandlers}>
+      <View
+        style={{
+          flex: 1,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginLeft: SCREEN_WIDTH * 0.1,
+        }}
+        {...responder.panHandlers}>
         <Board board={board} />
+        <NextBox tetrominoes={player.tetrominoes[0]} />
       </View>
       <GameController
         board={board}

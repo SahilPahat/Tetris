@@ -1,9 +1,10 @@
 import {useState, useEffect} from 'react';
 import {transferToBoard} from '../Component/Tetrominoes';
-import {movePlayer} from '../GameController';
+import {movePlayer} from '../GameCore/GameController';
 export const defaultCell = {
   occupied: false,
   color: '',
+  next: false
 };
 
 export const buildBoard = ({rows, columns}: any) => {

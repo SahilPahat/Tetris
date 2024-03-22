@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {rotate} from './Component/Tetrominoes';
-import {hasCollision, isWithinBoard} from './hooks/useBoard';
-import {useDropTime, useInterval} from './hooks/useDropTime';
+import {rotate} from '../Component/Tetrominoes';
+import {hasCollision, isWithinBoard} from '../hooks/useBoard';
+import {useDropTime, useInterval} from '../hooks/useDropTime';
 export const Action = {
   Left: 'Left',
   FastDrop: 'FastDrop',
