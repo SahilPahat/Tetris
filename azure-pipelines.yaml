@@ -1,15 +1,15 @@
 variables:
   system.debug: 'false'
-  lastCommitMessage: 'Set up CI with Azure Pipelines  [skip ci]'
+  lastCommitMessage: YAML
   pr.check.id: ''
   pr.status.id: ''
   MOBILECENTER_OUTPUT_DIRECTORY: $(Build.ArtifactStagingDirectory)/build
-  MOBILECENTER_BRANCH: azure-pipelines
+  MOBILECENTER_BRANCH: main
   MOBILECENTER_BUILD_ID: $(Build.BuildNumber)
   MOBILECENTER_SOURCE_DIRECTORY: $(Build.Repository.LocalPath)
   MOBILECENTER_TRIGGER: continuous
   APPCENTER_OUTPUT_DIRECTORY: $(Build.ArtifactStagingDirectory)/build
-  APPCENTER_BRANCH: azure-pipelines
+  APPCENTER_BRANCH: main
   APPCENTER_BUILD_ID: $(Build.BuildNumber)
   APPCENTER_SOURCE_DIRECTORY: $(Build.Repository.LocalPath)
   APPCENTER_TRIGGER: continuous
@@ -35,7 +35,7 @@ resources:
   repositories:
     - repository: self
       type: git
-      ref: azure-pipelines
+      ref: main
 jobs:
   - job: Phase_1
     displayName: Build
