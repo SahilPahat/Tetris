@@ -1,0 +1,395 @@
+{
+    "variables": {
+        "system.debug": {
+            "value": "false",
+            "allowOverride": true
+        },
+        "lastCommitMessage": {
+            "value": "Set up CI with Azure Pipelines  [skip ci]",
+            "allowOverride": true
+        },
+        "pr.check.id": {
+            "value": "",
+            "allowOverride": true
+        },
+        "pr.status.id": {
+            "value": "",
+            "allowOverride": true
+        },
+        "MOBILECENTER_OUTPUT_DIRECTORY": {
+            "value": "$(Build.ArtifactStagingDirectory)/build"
+        },
+        "MOBILECENTER_BRANCH": {
+            "value": "azure-pipelines"
+        },
+        "MOBILECENTER_BUILD_ID": {
+            "value": "$(Build.BuildNumber)"
+        },
+        "MOBILECENTER_SOURCE_DIRECTORY": {
+            "value": "$(Build.Repository.LocalPath)"
+        },
+        "MOBILECENTER_TRIGGER": {
+            "value": "continuous"
+        },
+        "APPCENTER_OUTPUT_DIRECTORY": {
+            "value": "$(Build.ArtifactStagingDirectory)/build"
+        },
+        "APPCENTER_BRANCH": {
+            "value": "azure-pipelines"
+        },
+        "APPCENTER_BUILD_ID": {
+            "value": "$(Build.BuildNumber)"
+        },
+        "APPCENTER_SOURCE_DIRECTORY": {
+            "value": "$(Build.Repository.LocalPath)"
+        },
+        "APPCENTER_TRIGGER": {
+            "value": "continuous"
+        },
+        "buildScripts.toolset": {
+            "value": "{}"
+        },
+        "javaScriptRunTests": {
+            "value": "false"
+        },
+        "MOBILECENTER_REACTNATIVE_PACKAGE": {
+            "value": "package.json"
+        },
+        "APPCENTER_REACTNATIVE_PACKAGE": {
+            "value": "package.json"
+        },
+        "moduleName": {
+            "value": "app"
+        },
+        "buildVariant": {
+            "value": "release"
+        },
+        "isRoot": {
+            "value": "false"
+        },
+        "runTests": {
+            "value": "false"
+        },
+        "runLint": {
+            "value": "false"
+        },
+        "keystoreEncoded": {
+            "value": null,
+            "isSecret": true
+        },
+        "automaticSigning": {
+            "value": "false"
+        },
+        "buildBundle": {
+            "value": "false"
+        },
+        "MOBILECENTER_ANDROID_MODULE": {
+            "value": "app"
+        },
+        "MOBILECENTER_ANDROID_VARIANT": {
+            "value": "release"
+        },
+        "APPCENTER_ANDROID_MODULE": {
+            "value": "app"
+        },
+        "APPCENTER_ANDROID_VARIANT": {
+            "value": "release"
+        },
+        "sonoma.tags": {
+            "value": "continuous,javascript,android",
+            "allowOverride": true
+        }
+    },
+    "buildNumberFormat": "$(BuildID)",
+    "process": {
+        "phases": [
+            {
+                "steps": [
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": true,
+                        "alwaysRun": false,
+                        "displayName": "Install build scripts",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "task": {
+                            "id": "e213ff0f-5d5c-4791-802d-52ea3e7be1f1",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "targetType": "inline",
+                            "scriptName": "",
+                            "arguments": "",
+                            "workingDirectory": "",
+                            "script": "Set-Location -Path '$(Agent.HomeDirectory)'\nInvoke-WebRequest -Uri 'https://appcenterbuildassets.azureedge.net/buildscripts/appcenter-build-assets-latest.zip' -OutFile 'appcenter-build-assets-latest.zip'\nif (Test-Path ./scripts) { Remove-Item -Path ./scripts -Force -Recurse }\nNew-Item -ItemType directory -Path 'scripts' | Out-Null\nunzip -q -d 'scripts' 'appcenter-build-assets-latest.zip'\nInvoke-Expression 'bash ./scripts/init.sh'",
+                            "failOnStderr": "true"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Select Node.js Version v2",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "task": {
+                            "id": "6c731c3c-3c68-459a-a5c9-bde6e6595b5b",
+                            "versionSpec": "3.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "targetType": "filePath",
+                            "filePath": "$(Agent.HomeDirectory)/scripts/select-node-version.sh",
+                            "arguments": "node20",
+                            "workingDirectory": "",
+                            "failOnStderr": "true"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "yarn/npm install",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "task": {
+                            "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+                            "versionSpec": "1.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "filename": "sh",
+                            "arguments": "-c \"if [ -f yarn.lock ]; then { yarn install --network-timeout=600000 && yarn list --depth=0; } else npm install; fi\"",
+                            "workingFolder": "",
+                            "failOnStandardError": "false"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Run Jetify",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "task": {
+                            "id": "d9bafed4-0b18-4f58-968d-86655b4d2ce9",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "script": "\n            if [ -f node_modules/jetifier/bin/jetify ]; then\n                node node_modules/jetifier/bin/jetify\n            else\n                echo \"Warning: node_modules/jetifier/bin/jetify does not exist\"\n                echo \"         source code will not be upgraded to AndroidX\"\n            fi\n            ",
+                            "workingDirectory": "",
+                            "failOnStderr": "true"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Tag build",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "task": {
+                            "id": "6c731c3c-3c68-459a-a5c9-bde6e6595b5b",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "scriptPath": "$(Agent.HomeDirectory)/scripts/emit-tags.sh",
+                            "args": "$(sonoma.tags)",
+                            "disableAutoCwd": "false",
+                            "cwd": "",
+                            "failOnStandardError": "false"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Gradle Task",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "task": {
+                            "id": "8d8eebd8-2b94-4c97-85af-839254cc6da4",
+                            "versionSpec": "1.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "wrapperScript": "android/gradlew",
+                            "tasks": "clean :app:assembleRelease ",
+                            "options": "-p \"android\"",
+                            "cwd": "",
+                            "findbugsAnalysisEnabled": "false",
+                            "javaHomeSelection": "JDKVersion",
+                            "jdkVersion": "default",
+                            "jdkUserInputPath": "",
+                            "jdkArchitecture": "x86",
+                            "gradleOpts": "-Xmx1024m",
+                            "publishJUnitResults": "false",
+                            "testResultsFiles": "**/build/test-results/TEST-*.xml",
+                            "testRunTitle": "",
+                            "codeCoverageTool": "None",
+                            "classFilesDirectories": "build/classes/main/",
+                            "classFilter": "",
+                            "sqAnalysisEnabled": "false",
+                            "sqConnectedServiceName": "",
+                            "sqProjectName": "",
+                            "sqProjectKey": "",
+                            "sqProjectVersion": "",
+                            "sqDbDetailsRequired": "false",
+                            "sqDbUrl": "",
+                            "sqDbUsername": "",
+                            "sqDbPassword": "",
+                            "sqAnalysisIncludeFullReport": "true",
+                            "sqAnalysisBreakBuildIfQualityGateFailed": "false",
+                            "checkstyleAnalysisEnabled": "false",
+                            "pmdAnalysisEnabled": "false"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Android Postprocess",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "refName": "appcenter_android_postprocess_output",
+                        "task": {
+                            "id": "6c731c3c-3c68-459a-a5c9-bde6e6595b5b",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "scriptPath": "$(Agent.HomeDirectory)/scripts/android-postprocess.sh",
+                            "args": "$(build.sourcesdirectory)/android/app/build/outputs/apk",
+                            "disableAutoCwd": "false",
+                            "cwd": "",
+                            "failOnStandardError": "false"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Copy build files to staging",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "task": {
+                            "id": "5bfb729a-a7c8-4a78-a7c3-8d717bb7c13c",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "SourceFolder": "$(build.sourcesdirectory)/android/app/build/outputs",
+                            "Contents": "apk/**/*.apk",
+                            "TargetFolder": "$(build.artifactstagingdirectory)/build",
+                            "CleanTargetFolder": "false",
+                            "OverWrite": "true",
+                            "flattenFolders": "true"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Copy mapping files to staging",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "task": {
+                            "id": "5bfb729a-a7c8-4a78-a7c3-8d717bb7c13c",
+                            "versionSpec": "2.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "SourceFolder": "$(build.sourcesdirectory)/android/app/build/outputs",
+                            "Contents": "mapping/**/mapping.txt",
+                            "TargetFolder": "$(build.artifactstagingdirectory)/mapping",
+                            "CleanTargetFolder": "false",
+                            "OverWrite": "true",
+                            "flattenFolders": "true"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": false,
+                        "alwaysRun": false,
+                        "displayName": "Publish build",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "task": {
+                            "id": "2ff763a7-ce83-4e1f-bc89-0ae63477cebe",
+                            "versionSpec": "1.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "PathtoPublish": "$(build.artifactstagingdirectory)/build",
+                            "ArtifactName": "build",
+                            "ArtifactType": "Container"
+                        }
+                    },
+                    {
+                        "environment": {},
+                        "enabled": true,
+                        "continueOnError": true,
+                        "alwaysRun": false,
+                        "displayName": "Publish mapping",
+                        "timeoutInMinutes": 0,
+                        "retryCountOnTaskFailure": 0,
+                        "condition": "and(succeeded(), startsWith(variables['appcenter_android_postprocess_output.mapping'], true))",
+                        "task": {
+                            "id": "2ff763a7-ce83-4e1f-bc89-0ae63477cebe",
+                            "versionSpec": "1.*",
+                            "definitionType": "task"
+                        },
+                        "inputs": {
+                            "PathtoPublish": "$(build.artifactstagingdirectory)/mapping",
+                            "ArtifactName": "mapping",
+                            "ArtifactType": "Container"
+                        }
+                    }
+                ],
+                "name": null,
+                "refName": "Phase_1",
+                "condition": "succeeded()",
+                "target": {
+                    "executionOptions": null,
+                    "allowScriptsAuthAccessOption": false,
+                    "type": 1
+                },
+                "jobAuthorizationScope": 0
+            }
+        ],
+        "type": 1
+    },
+    "repository": {
+        "properties": {
+            "connectedServiceId": "a4975d3b-2bc5-4687-842d-f7281f06fcc5",
+            "gitLfsSupport": "true",
+            "skipSyncSource": "false",
+            "checkoutNestedSubmodules": "true",
+            "fetchDepth": "0",
+            "cleanOptions": "3"
+        },
+        "id": "https://github.com/SahilPahat/Tetris.git",
+        "type": "Git",
+        "name": "git-5f3e1f9a-390f-4c0b-9fe3-cbe3473c27ca",
+        "url": "https://github.com/SahilPahat/Tetris.git",
+        "defaultBranch": "azure-pipelines",
+        "clean": "true",
+        "checkoutSubmodules": true
+    },
+    "project": {
+        "id": "6a278bb9-cda8-4e43-ae3e-e6cfda36e0d2"
+    }
+}
