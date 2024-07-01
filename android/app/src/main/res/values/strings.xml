@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Tetris</string>
+     <string moduleConfig="true" name="CodePushDeploymentKey">YkBtQbiDwkbLiAlRommVDBw2abg6n0KtNlFBg</string>0ea59b75b6fe7aa9d47eb28a99c360dd01ebcd02
 </resources>
